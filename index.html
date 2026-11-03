@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日语单词大冒险 · ことばの島</title>
+<style>
+  :root{
+    --ink:#4A3B52;
+    --muted:#8C7E96;
+    --pink:#FF6E9C;
+    --pink-dark:#D94B7C;
+    --purple:#8B7BF7;
+    --blue:#5BB8F2;
+    --green:#4CC38A;
+    --red:#FF6B6B;
+    --yellow:#FFC93C;
+    --line:#EADFF5;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Microsoft YaHei','PingFang SC',sans-serif;
+    background:#CDEFFF;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;}
+  button:focus-visible{outline:3px solid var(--purple);outline-offset:3px;}
+
+  /* ---------- 背景 ---------- */
+  .bg{
+    position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+    background:linear-gradient(180deg,#BFE9FF 0%,#DFF6FF 42%,#FFF4DE 100%);
+  }
+  .sun{
+    position:absolute; top:7%; right:9%;
+    width:clamp(80px,12vw,130px); height:clamp(80px,12vw,130px);
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#FFF3B0,#FFD447);
+    box-shadow:0 0 60px rgba(255,212,71,.55);
+  }
+  .cloud{
+    position:absolute; width:130px; height:42px;
+    background:#fff; border-radius:999px; opacity:.75;
+    animation:cloudBob 9s ease-in-out infinite;
+  }
+  .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%;}
+  .cloud::before{width:62px;height:62px;top:-26px;left:18px;}
+  .cloud::after{width:44px;height:44px;top:-16px;left:70px;}
+  .cloud.c1{top:14%;left:6%;}
+  .cloud.c2{top:26%;right:12%;opacity:.55;animation-delay:-3s;}
+  .cloud.c3{top:44%;left:46%;opacity:.45;animation-delay:-6s;transform:scale(.7);}
+  .hill{position:absolute;bottom:-12vh;border-radius:50% 50% 0 0;}
+  .hill.h1{width:75vw;height:32vh;left:-12vw;background:#B7EBAE;opacity:.45;}
+  .hill.h2{width:68vw;height:26vh;right:-10vw;background:#A9E4D0;opacity:.38;}
+  @keyframes cloudBob{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+
+  /* ---------- 框架 ---------- */
+  #app{position:relative;z-index:1;min-height:100vh;}
+  .screen{display:none;}
+  .screen.active{
+    display:flex; flex-direction:column; min-height:100vh;
+    animation:fadeUp .35s ease both;
+  }
+  #screen-title,#screen-map,#screen-result{align-items:center;justify-content:center;padding:28px 18px 40px;}
+  #screen-game{padding:18px 16px 40px;justify-content:center;}
+  .wrap{width:100%;max-width:960px;margin:0 auto;}
+
+  .sound-toggle{
+    position:fixed;top:16px;right:16px;z-index:100;
+    width:48px;height:48px;border-radius:50%;border:none;
+    background:rgba(255,255,255,.92);font-size:22px;cursor:pointer;
+    box-shadow:0 4px 0 rgba(120,90,150,.15);
+    transition:transform .15s;
+  }
+  .sound-toggle:active{transform:translateY(3px);}
+  .sound-toggle.muted{opacity:.65;}
+
+  /* ---------- 标题页 ---------- */
+  .title-inner{
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    width:100%;max-width:900px;
+  }
+  .logo-jp{
+    font-weight:800;letter-spacing:6px;color:#7B63E8;
+    font-size:clamp(13px,2vw,16px);
+  }
+  .logo-line{
+    margin:8px 0 6px;font-size:clamp(42px,9vw,76px);font-weight:900;
+    letter-spacing:2px;line-height:1.12;color:#443650;
+    text-shadow:0 4px 0 #fff,0 8px 0 rgba(120,90,150,.08);
+  }
+  .logo-line .accent{color:var(--pink);text-shadow:0 4px 0 #fff,0 9px 0 #FFD3E0;}
+  .logo-sub{color:#7A6C84;font-weight:700;font-size:clamp(13px,2.4vw,16px);letter-spacing:1px;}
+
+  .cat-col{position:relative;margin:16px 0 4px;}
+  .bubble{
+    position:relative;z-index:2;background:#fff;border-radius:24px;
+    padding:14px 24px;box-shadow:0 8px 0 rgba(120,90,150,.10);
+    font-weight:800;margin-bottom:22px;
+    animation:popIn .5s .1s both;
+  }
+  .bubble::after{
+    content:'';position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);
+    border:12px solid transparent;border-top-color:#fff;
+  }
+  .bubble-jp{display:block;font-size:clamp(15px,2.4vw,19px);color:#5A4A63;line-height:1.45;}
+  .bubble-cn{display:block;font-size:12px;color:#A08FA8;margin-top:4px;font-weight:700;}
+  .cat{
+    width:clamp(170px,26vw,220px);height:auto;display:block;
+    animation:bob 3.2s ease-in-out infinite;
+    filter:drop-shadow(0 10px 0 rgba(120,90,150,.08));
+  }
+  .float-word{
+    position:absolute;padding:8px 14px;border-radius:14px;font-weight:900;
+    font-size:16px;box-shadow:0 4px 0 rgba(120,90,150,.10);
+    animation:floatWord 5s ease-in-out infinite;
+    user-select:none;
+  }
+  .fw1{top:34%;left:-105px;transform:rotate(-9deg);background:#FFF0F6;color:#E05A85;}
+  .fw2{top:18%;right:-92px;transform:rotate(7deg);background:#EAF7FF;color:#248AC0;animation-delay:-1.6s;}
+  .fw3{top:62%;right:-100px;transform:rotate(-5deg);background:#F2EDFF;color:#6A57E0;animation-delay:-3.1s;}
+  @keyframes floatWord{0%,100%{margin-top:0}50%{margin-top:-10px}}
+
+  .btn{
+    font-family:inherit;font-weight:900;border:none;border-radius:999px;
+    cursor:pointer;letter-spacing:1px;
+    transition:transform .12s,box-shadow .12s,filter .15s;
+  }
+  .btn.primary{
+    background:linear-gradient(180deg,#FF9BBA,#FF6E9C);color:#fff;
+    box-shadow:0 6px 0 var(--pink-dark),0 14px 24px rgba(255,110,156,.28);
+    padding:16px 36px;font-size:20px;
+  }
+  .btn.primary:hover{transform:translateY(-2px);filter:saturate(1.08);}
+  .btn.primary:active{transform:translateY(4px);box-shadow:0 2px 0 var(--pink-dark);}
+  .btn.ghost{
+    background:#fff;color:#7A6C84;box-shadow:0 6px 0 #E2DAE9;
+    padding:15px 30px;font-size:18px;
+  }
+  .btn.ghost:hover{transform:translateY(-2px);}
+  .btn.ghost:active{transform:translateY(4px);box-shadow:0 2px 0 #E2DAE9;}
+  .btn-xl{padding:19px 56px;font-size:clamp(20px,3vw,25px);}
+  #start-btn{margin-top:14px;}
+  .feature-chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px;}
+  .feature-chip{
+    background:rgba(255,255,255,.85);border-radius:999px;padding:9px 17px;
+    font-size:14px;font-weight:800;color:#6B5B73;
+    box-shadow:0 4px 0 rgba(120,90,150,.10);
+  }
+  .small-note{margin:16px 0 0;font-size:13px;color:#9A8AA3;font-weight:700;}
+
+  /* ---------- 地图页 ---------- */
+  .map-inner{max-width:900px;}
+  .map-head{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:24px;}
+  .map-head h2{margin:0;font-size:clamp(24px,4vw,34px);font-weight:900;}
+  .map-head p{margin:2px 0 0;font-size:12px;color:#8C7E96;font-weight:800;letter-spacing:3px;}
+  .icon-btn{
+    flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:none;
+    background:#fff;font-size:22px;font-weight:900;color:#6B5B73;cursor:pointer;
+    box-shadow:0 4px 0 rgba(120,90,150,.15);
+    transition:transform .12s;
+  }
+  .icon-btn:active{transform:translateY(3px);}
+  .star-chip{
+    margin-left:auto;background:#fff;border-radius:999px;padding:10px 16px;
+    font-weight:900;font-size:14px;color:#8A6A00;
+    box-shadow:0 4px 0 rgba(120,90,150,.12);white-space:nowrap;
+  }
+  .map-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%;}
+  .stage-card{
+    position:relative;display:flex;align-items:center;gap:16px;
+    padding:20px 18px 20px 24px;border-radius:26px;border:4px solid #fff;
+    background:linear-gradient(135deg,#fff 45%,var(--accent-soft) 130%);
+    text-align:left;cursor:pointer;overflow:hidden;
+    box-shadow:0 8px 0 #DCD0E8,0 16px 26px rgba(120,90,150,.10);
+    transition:transform .15s,box-shadow .15s;
+  }
+  .stage-card::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:8px;
+    background:var(--accent);opacity:.85;
+  }
+  .stage-card:not(.locked):hover{transform:translateY(-4px);box-shadow:0 12px 0 #DCD0E8,0 22px 30px rgba(120,90,150,.14);}
+  .stage-card:not(.locked):active{transform:translateY(3px);box-shadow:0 4px 0 #DCD0E8;}
+  .stage-card.locked{filter:grayscale(.75);opacity:.58;cursor:not-allowed;}
+  .stage-emoji{
+    flex:0 0 auto;width:76px;height:76px;border-radius:22px;
+    display:grid;place-items:center;font-size:42px;
+    background:rgba(255,255,255,.9);
+    box-shadow:inset 0 0 0 3px var(--accent-soft);
+  }
+  .stage-info{min-width:0;}
+  .stage-no{font-size:11px;letter-spacing:2px;font-weight:900;color:var(--accent);}
+  .stage-name{font-size:clamp(21px,2.6vw,26px);font-weight:900;line-height:1.25;}
+  .stage-cn{font-size:13px;color:var(--muted);font-weight:700;margin-top:1px;}
+  .stage-stars{margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .stars{color:#FFC93C;font-size:18px;letter-spacing:1px;}
+  .stars .dim{color:#EBE1F3;}
+  .stage-stars .best{font-size:11px;color:#A99BB2;font-weight:800;}
+  .lock{position:absolute;right:16px;top:14px;font-size:22px;}
+  .map-tip{font-size:13px;color:#8C7E96;font-weight:700;margin:22px 0 0;}
+
+  /* ---------- 游戏页 ---------- */
+  .game-wrap{
+    max-width:820px;
+    --accent:#8B7BF7;--accent-soft:#F0EDFF;
+  }
+  .game-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;row-gap:8px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:#fff;border-radius:999px;padding:9px 14px;
+    font-size:14px;font-weight:900;white-space:nowrap;
+    box-shadow:0 4px 0 rgba(120,90,150,.12);
+  }
+  .stage-chip{background:var(--accent-soft);color:var(--accent);}
+  .hearts-chip{font-size:15px;letter-spacing:1px;padding:9px 12px;}
+  .score-chip{color:#8A6A00;}
+  .combo-chip{
+    display:none;background:#FFF0F6;color:#E05A85;
+  }
+  .combo-chip.show{display:inline-flex;animation:popIn .2s both;}
+  .progress-row{
+    display:flex;justify-content:space-between;align-items:center;
+    margin:16px 6px 7px;font-size:13px;font-weight:800;color:#7B6B82;
+  }
+  .progress-bar{
+    height:14px;background:#fff;border-radius:999px;overflow:hidden;
+    box-shadow:inset 0 2px 4px rgba(74,59,82,.08),0 3px 0 rgba(120,90,150,.06);
+    margin-bottom:18px;
+  }
+  .progress-fill{
+    height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,#9AD8FF,var(--accent));
+    transition:width .35s ease;
+  }
+  .question-card{
+    background:#fff;border-radius:32px;border:4px solid #fff;
+    padding:clamp(20px,4vw,36px);
+    min-height:380px;display:flex;flex-direction:column;
+    box-shadow:0 10px 0 rgba(120,90,150,.13),0 24px 46px rgba(120,90,150,.12);
+  }
+  .q-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-weight:900;font-size:14px;padding:8px 15px;border-radius:999px;
+    white-space:nowrap;
+  }
+  .badge-reading{background:#E2F4FF;color:#1E88C7;}
+  .badge-meaning{background:#FFF1DD;color:#D98400;}
+  .badge-spelling{background:#EFEBFF;color:#6A57E0;}
+  .q-hint{font-size:13px;color:#9A8AA3;font-weight:700;}
+  .word-display{
+    text-align:center;font-weight:800;color:#3F3350;
+    font-size:clamp(44px,10vw,68px);line-height:1.25;
+    letter-spacing:4px;margin:20px 0 8px;
+    word-break:keep-all;
+  }
+  .word-display.kana-display{
+    font-size:clamp(34px,8vw,56px);letter-spacing:2px;color:#3F3350;
+  }
+  .word-row{
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    margin:18px 0 8px;flex-wrap:wrap;
+  }
+  .word-row .word-display{margin:0;}
+  .speak-btn{
+    flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:none;
+    background:#EAF7FF;font-size:22px;cursor:pointer;
+    box-shadow:0 4px 0 #CBE9FA;
+    transition:transform .12s;
+  }
+  .speak-btn:hover{transform:translateY(-2px);}
+  .speak-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #CBE9FA;}
+
+  .options{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;
+    margin-top:auto;padding-top:22px;
+  }
+  .options.compact{grid-template-columns:1fr 1fr;}
+  .option{
+    width:100%;font-family:inherit;font-weight:800;font-size:clamp(19px,2.7vw,24px);
+    color:var(--ink);background:#FCFAFF;border:3px solid var(--line);
+    border-radius:20px;padding:18px 14px;min-height:66px;cursor:pointer;
+    box-shadow:0 5px 0 #E4D8F0;
+    transition:transform .1s,border-color .15s,background .15s,box-shadow .1s;
+  }
+  .option.kana-option{letter-spacing:1px;}
+  .option:hover:not(:disabled){transform:translateY(-2px);border-color:#FFB3CB;background:#FFF8FB;}
+  .option:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #E4D8F0;}
+  .option:disabled{cursor:default;opacity:1;}
+  .option.correct{
+    background:#E3FBEF;border-color:var(--green);color:#1E8A5B;
+    box-shadow:0 5px 0 #A8E8C9;
+  }
+  .option.wrong{
+    background:#FFE9E9;border-color:var(--red);color:#D63B3B;
+    box-shadow:0 5px 0 #FFC2C2;animation:shake .4s;
+  }
+
+  /* 拼写题 */
+  .meaning-hint{text-align:center;font-size:18px;color:#84738D;font-weight:800;margin-top:-2px;}
+  .speak-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0 16px;}
+  .mini-btn{
+    border:none;background:#F2ECFF;color:#6A57E0;font-weight:800;
+    padding:10px 16px;border-radius:999px;cursor:pointer;font-size:14px;
+    box-shadow:0 3px 0 #DCD2F5;
+    transition:transform .1s;
+  }
+  .mini-btn:hover{transform:translateY(-2px);}
+  .mini-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #DCD2F5;}
+  .mini-btn.ghost{background:#F4F1F7;color:#7A6C84;box-shadow:0 3px 0 #E2DAE9;}
+  .spell-board{display:flex;flex-direction:column;gap:14px;align-items:center;}
+  .kana-slots{
+    display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
+    min-height:76px;padding:12px;width:100%;
+    background:#FAF7FF;border:2px dashed #DCCFF0;border-radius:20px;
+    transition:background .2s,border-color .2s;
+  }
+  .kana-slots.correct{border-color:var(--green);background:#EDFFF6;}
+  .kana-slots.wrong{border-color:var(--red);background:#FFF0F0;animation:shake .4s;}
+  .kana-slot,.kana-tile{
+    width:clamp(45px,10.5vw,60px);height:clamp(50px,11.5vw,64px);
+    border-radius:16px;font-family:inherit;font-size:clamp(21px,4.8vw,29px);
+    font-weight:800;color:var(--ink);display:grid;place-items:center;
+    padding:0;
+  }
+  .kana-slot{
+    border:3px dashed #E3D9F2;background:#fff;
+  }
+  .kana-slot:disabled{opacity:1;color:transparent;}
+  .kana-slot.filled{
+    border-style:solid;border-color:#C9B8F0;background:#F2EDFF;
+    box-shadow:0 4px 0 #E0D6F5;cursor:pointer;color:var(--ink);
+  }
+  .kana-pool{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;min-height:66px;}
+  .kana-tile{
+    border:3px solid var(--line);background:#fff;cursor:pointer;
+    box-shadow:0 5px 0 #E4D8F0;
+    transition:transform .1s,border-color .15s,box-shadow .1s;
+  }
+  .kana-tile:hover:not(:disabled){transform:translateY(-2px);border-color:#FFB3CB;}
+  .kana-tile:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #E4D8F0;}
+  .kana-tile:disabled{opacity:1;cursor:default;}
+  .spell-actions{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+  .check-btn{
+    border:none;background:var(--green);color:#fff;font-weight:900;
+    font-size:18px;padding:12px 32px;border-radius:999px;cursor:pointer;
+    box-shadow:0 5px 0 #2E9D68;
+    transition:transform .1s,box-shadow .1s,background .2s;
+  }
+  .check-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .check-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #2E9D68;}
+  .check-btn:disabled{background:#CFC6D9;box-shadow:0 5px 0 #B7ACC4;cursor:not-allowed;}
+  .peek{
+    position:fixed;left:50%;top:38%;z-index:65;pointer-events:none;
+    transform:translate(-50%,-50%) scale(.9);
+    background:#fff;border:4px solid #DCD2F5;border-radius:22px;
+    padding:14px 32px;
+    font-size:clamp(28px,7vw,40px);font-weight:900;letter-spacing:6px;color:#6A57E0;
+    box-shadow:0 18px 55px rgba(70,40,90,.24);
+    opacity:0;transition:opacity .2s,transform .2s;
+  }
+  .peek.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+
+  /* ---------- 结果页 ---------- */
+  .result-card{
+    width:100%;max-width:640px;text-align:center;
+    background:#fff;border:4px solid #fff;border-radius:36px;
+    padding:34px 26px 30px;
+    box-shadow:0 12px 0 rgba(120,90,150,.14),0 28px 60px rgba(120,90,150,.16);
+  }
+  .result-emoji{font-size:66px;line-height:1.2;animation:popIn .5s both;}
+  .result-title{font-size:clamp(28px,5vw,36px);font-weight:900;margin:8px 0 6px;}
+  .result-stars{font-size:clamp(38px,8vw,50px);letter-spacing:6px;color:var(--yellow);min-height:58px;line-height:1.2;}
+  .result-stars .star{display:inline-block;animation:starPop .5s both;text-shadow:0 3px 0 #FFE7A3;}
+  .result-stars .star.dim{color:#EDE3F5;text-shadow:none;}
+  .result-sub{font-size:14px;font-weight:700;color:#8C7E96;margin:6px 0 20px;}
+  .result-stats{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+    background:#FAF7FF;border-radius:22px;padding:16px 10px;margin-bottom:22px;
+  }
+  .result-stats b{display:block;font-size:clamp(20px,3.5vw,26px);font-weight:900;color:#6A57E0;line-height:1.2;}
+  .result-stats small{font-size:11px;color:#8C7E96;font-weight:800;}
+  .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+  /* ---------- 反馈 / 彩带 ---------- */
+  .feedback{
+    position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;opacity:0;transition:opacity .2s;padding:20px;
+  }
+  .feedback.show{opacity:1;}
+  .feedback-card{
+    background:#fff;border:4px solid #fff;border-radius:28px;
+    padding:22px 32px;text-align:center;max-width:92vw;
+    box-shadow:0 22px 70px rgba(70,40,90,.28);
+    transform:translateY(12px) scale(.95);
+    transition:transform .2s;
+  }
+  .feedback.show .feedback-card{transform:translateY(0) scale(1);}
+  .feedback.ok .feedback-card{border-color:#9BEBC8;}
+  .feedback.bad .feedback-card{border-color:#FFC2C2;}
+  .feedback-emoji{font-size:44px;line-height:1.2;}
+  .feedback-title{font-size:24px;font-weight:900;margin:2px 0 4px;}
+  .feedback.ok .feedback-title{color:#2E9D68;}
+  .feedback.bad .feedback-title{color:#E05A5A;}
+  .feedback-score{font-weight:900;color:var(--pink);font-size:19px;}
+  .feedback-detail{font-size:17px;font-weight:800;color:#6B5B73;margin-top:5px;line-height:1.5;}
+  #confetti{position:fixed;inset:0;z-index:60;pointer-events:none;}
+
+  /* ---------- 动画 ---------- */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  @keyframes starPop{0%{opacity:0;transform:scale(.2) rotate(-20deg)}70%{transform:scale(1.2) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:760px){
+    #screen-title,#screen-map,#screen-result{padding:30px 14px 36px;justify-content:flex-start;}
+    #screen-title{justify-content:center;padding-top:34px;}
+    .cat-col{margin-top:10px;}
+    .bubble{margin-bottom:18px;}
+    .float-word{display:none;}
+    .map-grid{grid-template-columns:1fr;}
+    .map-head{gap:10px;padding-right:48px;}
+    .sound-toggle{width:42px;height:42px;font-size:19px;top:12px;right:12px;}
+    body[data-screen="result"] .sound-toggle{display:none;}
+    .stage-emoji{width:64px;height:64px;font-size:34px;border-radius:18px;}
+    .question-card{min-height:340px;border-radius:26px;}
+    .option{padding:15px 12px;min-height:58px;}
+    .options{padding-top:18px;}
+  }
+  @media (max-width:560px){
+    .options{grid-template-columns:1fr;gap:11px;}
+    .options.compact{grid-template-columns:1fr 1fr;}
+    .game-top .stage-chip{font-size:12px;padding:8px 11px;}
+    .hearts-chip{font-size:14px;padding:8px 10px;}
+    .chip{font-size:12px;padding:8px 11px;}
+    .progress-row{margin-top:12px;}
+    .word-display{letter-spacing:2px;}
+    .result-card{padding:26px 16px;border-radius:28px;}
+    .result-actions .btn{font-size:16px;padding:13px 22px;}
+    .feedback-card{padding:18px 22px;}
+    .feedback-detail{font-size:15px;}
+  }
+  @media (max-width:760px) and (max-height:810px){
+    .game-top{padding-right:48px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="sun"></div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+  <div class="hill h1"></div>
+  <div class="hill h2"></div>
+</div>
+
+<button class="sound-toggle" id="sound-toggle" aria-label="关闭声音">🔊</button>
+
+<div id="app">
+
+  <!-- 标题页 -->
+  <section class="screen active" id="screen-title">
+    <div class="title-inner">
+      <div class="logo-jp">にほんご ・ ことばの島</div>
+      <h1 class="logo-line">日语单词<span class="accent">大冒险</span></h1>
+      <div class="logo-sub">N4 单词闯关 · 读音 / 拼写 / 意思</div>
+
+      <div class="cat-col">
+        <div class="bubble">
+          <span class="bubble-jp">いっしょに たんごを<br>あつめよう！</span>
+          <span class="bubble-cn">一起收集单词吧～</span>
+        </div>
+        <svg class="cat" viewBox="0 0 220 205" role="img" aria-label="戴蓝色围巾的小猫老师">
+          <path d="M172 150 q38 12 30 -34" fill="none" stroke="#5B4A42" stroke-width="10" stroke-linecap="round"/>
+          <ellipse cx="110" cy="158" rx="58" ry="40" fill="#FFF3DA" stroke="#5B4A42" stroke-width="6"/>
+          <path d="M70 146 Q110 166 150 146 L154 162 Q110 184 66 162 Z" fill="#5BB8F2" stroke="#5B4A42" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M64 78 L59 30 L99 52 Z" fill="#FFF3DA" stroke="#5B4A42" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M156 78 L161 30 L121 52 Z" fill="#FFF3DA" stroke="#5B4A42" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M70 65 L67 43 L88 53 Z" fill="#FFB6C9"/>
+          <path d="M150 65 L153 43 L132 53 Z" fill="#FFB6C9"/>
+          <circle cx="110" cy="99" r="62" fill="#FFF8E9" stroke="#5B4A42" stroke-width="6"/>
+          <ellipse cx="86" cy="95" rx="8" ry="11" fill="#4A3B52"/>
+          <ellipse cx="134" cy="95" rx="8" ry="11" fill="#4A3B52"/>
+          <circle cx="89" cy="91" r="3" fill="#fff"/>
+          <circle cx="137" cy="91" r="3" fill="#fff"/>
+          <ellipse cx="67" cy="114" rx="10" ry="6" fill="#FFC0CB" opacity=".8"/>
+          <ellipse cx="153" cy="114" rx="10" ry="6" fill="#FFC0CB" opacity=".8"/>
+          <path d="M106 108 h8 l-4 4 z" fill="#FF8FA8"/>
+          <path d="M110 112 q-6 10 -13 3 M110 112 q6 10 13 3" fill="none" stroke="#5B4A42" stroke-width="3" stroke-linecap="round"/>
+          <path d="M46 104 h20 M46 114 h18 M174 104 h-20 M174 114 h-18" stroke="#5B4A42" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="86" cy="186" rx="16" ry="10" fill="#FFF8E9" stroke="#5B4A42" stroke-width="5"/>
+          <ellipse cx="134" cy="186" rx="16" ry="10" fill="#FFF8E9" stroke="#5B4A42" stroke-width="5"/>
+        </svg>
+        <span class="float-word fw1" lang="ja">うみ</span>
+        <span class="float-word fw2" lang="ja">たべる</span>
+        <span class="float-word fw3" lang="ja">がっこう</span>
+      </div>
+
+      <button class="btn primary btn-xl" id="start-btn">出发！ 🚀</button>
+      <div class="feature-chips">
+        <span class="feature-chip">📖 读音</span>
+        <span class="feature-chip">✏️ 拼写</span>
+        <span class="feature-chip">💡 意思</span>
+      </div>
+      <p class="small-note" id="title-progress">共 4 关 · 每关 12 题 · 一起来挑战吧！</p>
+    </div>
+  </section>
+
+  <!-- 地图页 -->
+  <section class="screen" id="screen-map">
+    <div class="wrap map-inner">
+      <header class="map-head">
+        <button class="icon-btn" id="map-back" aria-label="返回标题">←</button>
+        <div>
+          <h2>冒险地图</h2>
+          <p>ことばの島</p>
+        </div>
+        <div class="star-chip">⭐ <span id="map-stars">0 / 12</span></div>
+      </header>
+      <div class="map-grid" id="map-grid"></div>
+      <p class="map-tip">完成一关，就能解锁下一座岛哦！</p>
+    </div>
+  </section>
+
+  <!-- 游戏页 -->
+  <section class="screen" id="screen-game">
+    <div class="wrap game-wrap">
+      <div class="game-top">
+        <button class="icon-btn" id="game-back" aria-label="回到地图">←</button>
+        <span class="chip stage-chip" id="game-stage-name">STAGE 1</span>
+        <span class="chip hearts-chip" id="hearts" aria-label="剩余 5 颗心">❤️❤️❤️❤️❤️</span>
+        <span class="chip score-chip">⭐ <span id="score">0</span></span>
+        <span class="chip combo-chip" id="combo">🔥 连击 ×2</span>
+      </div>
+      <div class="progress-row">
+        <span id="progress-text">第 1 / 12 题</span>
+        <span>加油！</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="question-card" id="question-card"></div>
+    </div>
+  </section>
+
+  <!-- 结果页 -->
+  <section class="screen" id="screen-result">
+    <div class="result-card">
+      <div class="result-emoji" id="result-emoji">🎊</div>
+      <h2 class="result-title" id="result-title">过关啦！</h2>
+      <div class="result-stars" id="result-stars"></div>
+      <p class="result-sub" id="result-sub"></p>
+      <div class="result-stats">
+        <div><b id="result-score">0</b><small>本关得分</small></div>
+        <div><b id="result-correct">0 / 12</b><small>答对题数</small></div>
+        <div><b id="result-best">0</b><small>最高分</small></div>
+      </div>
+      <div class="result-actions" id="result-actions"></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="feedback" id="feedback" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ================= 单词库（N4 左右） ================= */
+  const STAGES = [
+    {
+      id:1, name:'もりの村', cn:'森林小村', emoji:'🌲', color:'#3FBF87', soft:'#E9FBF2',
+      words:[
+        {kanji:'毎日', kana:'まいにち', cn:'每天'},
+        {kanji:'学校', kana:'がっこう', cn:'学校'},
+        {kanji:'先生', kana:'せんせい', cn:'老师'},
+        {kanji:'友達', kana:'ともだち', cn:'朋友'},
+        {kanji:'家族', kana:'かぞく', cn:'家人'},
+        {kanji:'天気', kana:'てんき', cn:'天气'},
+        {kanji:'時間', kana:'じかん', cn:'时间'},
+        {kanji:'仕事', kana:'しごと', cn:'工作'},
+        {kanji:'電話', kana:'でんわ', cn:'电话'},
+        {kanji:'電車', kana:'でんしゃ', cn:'电车'}
+      ]
+    },
+    {
+      id:2, name:'うみの町', cn:'海边小镇', emoji:'🌊', color:'#39B3E8', soft:'#E7F7FF',
+      words:[
+        {kanji:'海', kana:'うみ', cn:'大海'},
+        {kanji:'山', kana:'やま', cn:'山'},
+        {kanji:'川', kana:'かわ', cn:'河流'},
+        {kanji:'空', kana:'そら', cn:'天空'},
+        {kanji:'花', kana:'はな', cn:'花'},
+        {kanji:'動物', kana:'どうぶつ', cn:'动物'},
+        {kanji:'公園', kana:'こうえん', cn:'公园'},
+        {kanji:'病院', kana:'びょういん', cn:'医院'},
+        {kanji:'図書館', kana:'としょかん', cn:'图书馆'},
+        {kanji:'旅行', kana:'りょこう', cn:'旅行'}
+      ]
+    },
+    {
+      id:3, name:'よるの広場', cn:'夜晚广场', emoji:'🎆', color:'#8B7BF7', soft:'#F0EDFF',
+      words:[
+        {kanji:'食べる', kana:'たべる', cn:'吃'},
+        {kanji:'飲む', kana:'のむ', cn:'喝'},
+        {kanji:'見る', kana:'みる', cn:'看'},
+        {kanji:'聞く', kana:'きく', cn:'听'},
+        {kanji:'書く', kana:'かく', cn:'写'},
+        {kanji:'読む', kana:'よむ', cn:'读'},
+        {kanji:'走る', kana:'はしる', cn:'跑'},
+        {kanji:'泳ぐ', kana:'およぐ', cn:'游泳'},
+        {kanji:'忙しい', kana:'いそがしい', cn:'忙碌的'},
+        {kanji:'楽しい', kana:'たのしい', cn:'开心的'}
+      ]
+    },
+    {
+      id:4, name:'ことばのお城', cn:'语言城堡', emoji:'🏯', color:'#F2A33C', soft:'#FFF4E2',
+      words:[
+        {kanji:'準備', kana:'じゅんび', cn:'准备'},
+        {kanji:'説明', kana:'せつめい', cn:'说明'},
+        {kanji:'約束', kana:'やくそく', cn:'约定'},
+        {kanji:'経験', kana:'けいけん', cn:'经验'},
+        {kanji:'文化', kana:'ぶんか', cn:'文化'},
+        {kanji:'生活', kana:'せいかつ', cn:'生活'},
+        {kanji:'習慣', kana:'しゅうかん', cn:'习惯'},
+        {kanji:'相談', kana:'そうだん', cn:'商量'},
+        {kanji:'努力', kana:'どりょく', cn:'努力'},
+        {kanji:'将来', kana:'しょうらい', cn:'将来'}
+      ]
+    }
+  ];
+
+  const ALL_WORDS = STAGES.flatMap(function(s){ return s.words; });
+  const SAVE_KEY = 'kotoba-island-save-v1';
+  const MAX_HEARTS = 5;
+
+  const $  = function(sel, root){ return (root || document).querySelector(sel); };
+  const $$ = function(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+
+  let save = loadSave();
+  let soundOn = save.sound !== false;
+  let actx = null;
+  let jaVoice = null;
+  let confettiRAF = null;
+
+  const state = {
+    screen:'title',
+    stageIndex:0,
+    questions:[],
+    qIndex:0,
+    hearts:MAX_HEARTS,
+    score:0,
+    combo:0,
+    mistakes:0,
+    correctCount:0,
+    answered:false,
+    qType:null,
+    keyOptions:null,
+    spell:null,
+    timer:null,
+    feedbackTimer:null,
+    peekTimer:null
+  };
+
+  init();
+
+  /* ================= 初始化 ================= */
+  function init(){
+    bindEvents();
+    setupVoices();
+    updateSoundIcon();
+    updateTitleProgress();
+    renderMap();
+    showScreen('title');
+  }
+
+  function bindEvents(){
+    $('#start-btn').addEventListener('click', function(){ sfx('click'); showScreen('map'); });
+    $('#map-back').addEventListener('click', function(){ sfx('click'); showScreen('title'); });
+    $('#game-back').addEventListener('click', onBackToMap);
+    $('#sound-toggle').addEventListener('click', toggleSound);
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', resizeConfetti);
+  }
+
+  function showScreen(name){
+    clearTimeout(state.timer);
+    clearTimeout(state.feedbackTimer);
+    clearTimeout(state.peekTimer);
+    hideFeedback();
+    $$('.screen').forEach(function(s){ s.classList.remove('active'); });
+    const el = $('#screen-' + name);
+    if(el) el.classList.add('active');
+    state.screen = name;
+    document.body.dataset.screen = name;
+    window.scrollTo(0, 0);
+    stopConfetti();
+    if(name === 'map') renderMap();
+    if(name === 'title') updateTitleProgress();
+  }
+
+  function onBackToMap(){
+    if(state.screen !== 'game') return;
+    if(state.qIndex > 0){
+      const ok = window.confirm('要回到地图吗？本关的进度不会保存哦。');
+      if(!ok) return;
+    }
+    sfx('click');
+    showScreen('map');
+  }
+
+  /* ================= 存档 ================= */
+  function loadSave(){
+    try{
+      const raw = localStorage.getItem(SAVE_KEY);
+      if(raw){
+        const s = JSON.parse(raw);
+        return {
+          unlocked: Math.min(Math.max(Number(s.unlocked) || 1, 1), STAGES.length),
+          stars: (s.stars && typeof s.stars === 'object') ? s.stars : {},
+          best: (s.best && typeof s.best === 'object') ? s.best : {},
+          sound: s.sound !== false
+        };
+      }
+    }catch(e){ /* 忽略存档异常 */ }
+    return { unlocked:1, stars:{}, best:{}, sound:true };
+  }
+
+  function saveGame(){
+    try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){ /* 忽略 */ }
+  }
+
+  function totalStars(){
+    return Object.keys(save.stars || {}).reduce(function(sum, k){
+      return sum + (Number(save.stars[k]) || 0);
+    }, 0);
+  }
+
+  function updateTitleProgress(){
+    const el = $('#title-progress');
+    if(!el) return;
+    const stars = totalStars();
+    el.textContent = stars > 0
+      ? '已收集 ' + stars + ' / 12 颗星星'
+      : '共 4 关 · 每关 12 题 · 一起来挑战吧！';
+  }
+
+  /* ================= 地图 ================= */
+  function renderMap(){
+    const grid = $('#map-grid');
+    if(!grid) return;
+    const ms = $('#map-stars');
+    if(ms) ms.textContent = totalStars() + ' / 12';
+
+    grid.innerHTML = STAGES.map(function(stage){
+      const unlocked = stage.id <= save.unlocked;
+      const stars = Number(save.stars[stage.id]) || 0;
+      const best = Number(save.best[stage.id]) || 0;
+      return '<button class="stage-card ' + (unlocked ? '' : 'locked') + '" data-stage="' + stage.id + '" ' +
+        'style="--accent:' + stage.color + ';--accent-soft:' + stage.soft + '" ' +
+        (unlocked ? '' : 'disabled ') +
+        'aria-label="第' + stage.id + '关 ' + stage.cn + '">' +
+        '<div class="stage-emoji">' + stage.emoji + '</div>' +
+        '<div class="stage-info">' +
+          '<div class="stage-no">STAGE ' + stage.id + '</div>' +
+          '<div class="stage-name" lang="ja">' + stage.name + '</div>' +
+          '<div class="stage-cn">' + stage.cn + '</div>' +
+          '<div class="stage-stars">' + starString(stars) +
+            (best ? '<span class="best">最高 ' + best + ' 分</span>' : '') +
+          '</div>' +
+        '</div>' +
+        (unlocked ? '' : '<span class="lock">🔒</span>') +
+      '</button>';
+    }).join('');
+
+    $$('#map-grid .stage-card:not(.locked)').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        sfx('click');
+        startStage(Number(btn.dataset.stage));
+      });
+    });
+  }
+
+  function starString(n){
+    n = Math.max(0, Math.min(3, Number(n) || 0));
+    return '<span class="stars" aria-label="' + n + '颗星">' +
+      '★'.repeat(n) + '<span class="dim">' + '☆'.repeat(3 - n) + '</span></span>';
+  }
+
+  /* ================= 出题 ================= */
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function buildQuestions(stage){
+    const words = shuffle(stage.words);
+    const order = ['reading', 'meaning', 'spelling'];
+    const qs = words.map(function(w, i){
+      return { word:w, type:order[i % 3] };
+    });
+    const extras = shuffle(stage.words).slice(0, 2);
+    extras.forEach(function(w, i){
+      qs.push({ word:w, type:order[(i + 1) % 3] });
+    });
+    return shuffle(qs);
+  }
+
+  function readingOptions(word){
+    const seen = {};
+    seen[word.kana] = true;
+    const opts = [word.kana];
+    const pool = shuffle(ALL_WORDS);
+    for(let i = 0; i < pool.length && opts.length < 4; i++){
+      const k = pool[i].kana;
+      if(!seen[k]){ seen[k] = true; opts.push(k); }
+    }
+    return shuffle(opts);
+  }
+
+  function meaningOptions(word){
+    const seen = {};
+    seen[word.cn] = true;
+    const opts = [word.cn];
+    const pool = shuffle(ALL_WORDS);
+    for(let i = 0; i < pool.length && opts.length < 4; i++){
+      const c = pool[i].cn;
+      if(!seen[c]){ seen[c] = true; opts.push(c); }
+    }
+    return shuffle(opts);
+  }
+
+  function tokenizeKana(kana){
+    const small = 'ゃゅょぁぃぅぇぉ';
+    const chars = Array.from(kana);
+    const out = [];
+    for(let i = 0; i < chars.length; i++){
+      const c = chars[i];
+      const next = chars[i + 1];
+      if(next && small.indexOf(next) !== -1 && small.indexOf(c) === -1 && c !== 'っ' && c !== 'ー'){
+        out.push(c + next);
+        i++;
+      }else{
+        out.push(c);
+      }
+    }
+    return out;
+  }
+
+  /* ================= 关卡流程 ================= */
+  function startStage(id){
+    const stage = STAGES.find(function(s){ return s.id === id; });
+    if(!stage) return;
+
+    state.stageIndex = id - 1;
+    state.questions = buildQuestions(stage);
+    state.qIndex = 0;
+    state.hearts = MAX_HEARTS;
+    state.score = 0;
+    state.combo = 0;
+    state.mistakes = 0;
+    state.correctCount = 0;
+    state.answered = false;
+    state.keyOptions = null;
+    state.spell = null;
+
+    const wrap = $('.game-wrap');
+    if(wrap){
+      wrap.style.setProperty('--accent', stage.color);
+      wrap.style.setProperty('--accent-soft', stage.soft);
+    }
+    $('#game-stage-name').textContent = '第 ' + stage.id + ' 关 · ' + stage.cn;
+
+    showScreen('game');
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    if(state.screen !== 'game') return;
+    state.answered = false;
+    state.keyOptions = null;
+    state.spell = null;
+    clearTimeout(state.peekTimer);
+
+    const q = state.questions[state.qIndex];
+    if(!q) return;
+    state.qType = q.type;
+
+    updateHud();
+    const card = $('#question-card');
+    if(q.type === 'reading') renderReading(q, card);
+    else if(q.type === 'meaning') renderMeaning(q, card);
+    else renderSpellingQ(q, card);
+  }
+
+  function updateHud(){
+    const total = state.questions.length || 12;
+    const heartsEl = $('#hearts');
+    if(heartsEl){
+      heartsEl.textContent = '❤️'.repeat(Math.max(0, state.hearts)) +
+        '🤍'.repeat(Math.max(0, MAX_HEARTS - state.hearts));
+      heartsEl.setAttribute('aria-label', '剩余 ' + state.hearts + ' 颗心');
+    }
+    const scoreEl = $('#score');
+    if(scoreEl) scoreEl.textContent = state.score;
+
+    const comboEl = $('#combo');
+    if(comboEl){
+      comboEl.textContent = '🔥 连击 ×' + state.combo;
+      comboEl.classList.toggle('show', state.combo >= 2);
+    }
+
+    const done = state.answered ? state.qIndex + 1 : state.qIndex;
+    const current = Math.min(state.qIndex + 1, total);
+    const pt = $('#progress-text');
+    if(pt) pt.textContent = '第 ' + current + ' / ' + total + ' 题';
+    const pf = $('#progress-fill');
+    if(pf) pf.style.width = (done / total * 100) + '%';
+  }
+
+  /* ================= 三种题型 ================= */
+  function renderReading(q, card){
+    const word = q.word;
+    const opts = readingOptions(word);
+    card.innerHTML =
+      '<div class="q-top">' +
+        '<span class="badge badge-reading">📖 读音</span>' +
+        '<span class="q-hint">这个单词怎么读？</span>' +
+      '</div>' +
+      '<div class="word-display" lang="ja">' + word.kanji + '</div>' +
+      '<div class="options compact" id="options">' +
+        opts.map(function(o){
+          return '<button class="option kana-option" data-value="' + o + '" lang="ja">' + o + '</button>';
+        }).join('') +
+      '</div>';
+    bindOptions(word, word.kana);
+  }
+
+  function renderMeaning(q, card){
+    const word = q.word;
+    const opts = meaningOptions(word);
+    card.innerHTML =
+      '<div class="q-top">' +
+        '<span class="badge badge-meaning">💡 意思</span>' +
+        '<span class="q-hint">它是什么意思呢？</span>' +
+      '</div>' +
+      '<div class="word-row">' +
+        '<div class="word-display kana-display" lang="ja">' + word.kana + '</div>' +
+        '<button class="speak-btn" id="speak-btn" title="听发音" aria-label="听发音">🔊</button>' +
+      '</div>' +
+      '<div class="options" id="options">' +
+        opts.map(function(o){
+          return '<button class="option" data-value="' + o + '">' + o + '</button>';
+        }).join('') +
+      '</div>';
+
+    const sb = $('#speak-btn');
+    if(sb) sb.addEventListener('click', function(e){
+      e.stopPropagation();
+      sfx('click');
+      speak(word.kana);
+    });
+    bindOptions(word, word.cn);
+  }
+
+  function bindOptions(word, correctValue){
+    const buttons = $$('#options .option');
+    state.keyOptions = buttons;
+    buttons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(state.answered) return;
+        if(btn.dataset.value === correctValue) onCorrect(word, btn);
+        else onWrong(word, btn, correctValue);
+      });
+    });
+  }
+
+  function renderSpellingQ(q, card){
+    const word = q.word;
+    const tokens = tokenizeKana(word.kana);
+    let pool = tokens.map(function(ch, i){ return { id:i, ch:ch }; });
+    pool = shuffle(pool);
+    if(tokens.length > 1 && pool.map(function(t){ return t.ch; }).join('') === word.kana){
+      pool.push(pool.shift());
+    }
+    state.spell = { tokens:tokens, pool:pool, slots:[], word:word };
+
+    card.innerHTML =
+      '<div class="q-top">' +
+        '<span class="badge badge-spelling">✏️ 拼写</span>' +
+        '<span class="q-hint">用假名拼出它的读音</span>' +
+      '</div>' +
+      '<div class="word-display" lang="ja">' + word.kanji + '</div>' +
+      '<div class="meaning-hint">' + word.cn + '</div>' +
+      '<div class="speak-row">' +
+        '<button class="mini-btn" id="speak-btn">🔊 听发音</button>' +
+        '<button class="mini-btn" id="peek-btn">💡 偷偷看一眼</button>' +
+      '</div>' +
+      '<div class="spell-board">' +
+        '<div class="kana-slots" id="kana-slots"></div>' +
+        '<div class="kana-pool" id="kana-pool"></div>' +
+      '</div>' +
+      '<div class="spell-actions">' +
+        '<button class="mini-btn ghost" id="clear-btn">清空</button>' +
+        '<button class="check-btn" id="check-btn" disabled>确认 ✔</button>' +
+      '</div>' +
+      '<div class="peek" id="peek" lang="ja">' + word.kana + '</div>';
+
+    renderSpellingBoard();
+
+    const speakBtn = $('#speak-btn');
+    if(speakBtn) speakBtn.addEventListener('click', function(){ sfx('click'); speak(word.kana); });
+
+    const peekBtn = $('#peek-btn');
+    if(peekBtn) peekBtn.addEventListener('click', function(){
+      if(state.answered) return;
+      sfx('click');
+      const p = $('#peek');
+      if(!p) return;
+      p.classList.add('show');
+      clearTimeout(state.peekTimer);
+      state.peekTimer = setTimeout(function(){ p.classList.remove('show'); }, 1800);
+    });
+
+    const clearBtn = $('#clear-btn');
+    if(clearBtn) clearBtn.addEventListener('click', clearSpelling);
+
+    const checkBtn = $('#check-btn');
+    if(checkBtn) checkBtn.addEventListener('click', checkSpelling);
+  }
+
+  function renderSpellingBoard(){
+    const s = state.spell;
+    if(!s) return;
+    const slotsEl = $('#kana-slots');
+    const poolEl = $('#kana-pool');
+    if(!slotsEl || !poolEl) return;
+
+    slotsEl.innerHTML = s.tokens.map(function(_, i){
+      const t = s.slots[i];
+      return '<button class="kana-slot ' + (t ? 'filled' : '') + '" ' +
+        (t ? 'data-slot="' + i + '"' : 'disabled') + '>' + (t ? t.ch : '') + '</button>';
+    }).join('');
+
+    poolEl.innerHTML = s.pool.map(function(t){
+      return '<button class="kana-tile" data-tile="' + t.id + '" lang="ja">' + t.ch + '</button>';
+    }).join('');
+
+    $$('.kana-tile', poolEl).forEach(function(b){
+      b.addEventListener('click', function(){ addTile(Number(b.dataset.tile)); });
+    });
+    $$('.kana-slot[data-slot]', slotsEl).forEach(function(b){
+      b.addEventListener('click', function(){ removeTile(Number(b.dataset.slot)); });
+    });
+
+    const check = $('#check-btn');
+    if(check) check.disabled = s.slots.length !== s.tokens.length;
+  }
+
+  function addTile(id){
+    const s = state.spell;
+    if(!s || state.answered) return;
+    if(s.slots.length >= s.tokens.length) return;
+    const idx = s.pool.findIndex(function(t){ return t.id === id; });
+    if(idx < 0) return;
+    s.slots.push(s.pool.splice(idx, 1)[0]);
+    sfx('click');
+    renderSpellingBoard();
+  }
+
+  function removeTile(slotIndex){
+    const s = state.spell;
+    if(!s || state.answered) return;
+    const t = s.slots[slotIndex];
+    if(!t) return;
+    s.slots.splice(slotIndex, 1);
+    s.pool.push(t);
+    sfx('click');
+    renderSpellingBoard();
+  }
+
+  function clearSpelling(){
+    const s = state.spell;
+    if(!s || state.answered) return;
+    s.pool = s.pool.concat(s.slots);
+    s.slots = [];
+    sfx('click');
+    renderSpellingBoard();
+  }
+
+  function checkSpelling(){
+    const s = state.spell;
+    if(!s || state.answered) return;
+    if(s.slots.length !== s.tokens.length) return;
+    const joined = s.slots.map(function(t){ return t.ch; }).join('');
+    const board = $('#kana-slots');
+    if(joined === s.word.kana){
+      if(board) board.classList.add('correct');
+      onCorrect(s.word, null);
+    }else{
+      if(board) board.classList.add('wrong');
+      onWrong(s.word, null, null);
+    }
+  }
+
+  /* ================= 判定 / 计分 ================= */
+  function onCorrect(word, el){
+    if(state.answered) return;
+    state.answered = true;
+    state.correctCount++;
+    state.combo++;
+    const gain = 100 + Math.min((state.combo - 1) * 20, 100);
+    state.score += gain;
+
+    if(el) el.classList.add('correct');
+    lockInputs();
+    sfx('correct');
+    updateHud();
+    showFeedback(true, '+' + gain + ' 分', '', 1200);
+    state.timer = setTimeout(advance, 1300);
+  }
+
+  function onWrong(word, el, correctValue){
+    if(state.answered) return;
+    state.answered = true;
+    state.mistakes++;
+    state.hearts = Math.max(0, state.hearts - 1);
+    state.combo = 0;
+
+    if(el) el.classList.add('wrong');
+    if(correctValue !== null && correctValue !== undefined){
+      $$('#options .option').forEach(function(b){
+        if(b.dataset.value === correctValue) b.classList.add('correct');
+      });
+    }
+    lockInputs();
+    sfx('wrong');
+    updateHud();
+    showFeedback(false, '', word.kanji + '（' + word.kana + '）＝ ' + word.cn, 1950);
+
+    if(state.hearts <= 0){
+      state.timer = setTimeout(function(){ finishStage(false); }, 1900);
+    }else{
+      state.timer = setTimeout(advance, 2000);
+    }
+  }
+
+  function lockInputs(){
+    $$('#options .option').forEach(function(b){ b.disabled = true; });
+    const check = $('#check-btn');
+    if(check) check.disabled = true;
+    $$('.kana-tile').forEach(function(b){ b.disabled = true; });
+    $$('.kana-slot').forEach(function(b){ b.disabled = true; });
+  }
+
+  function advance(){
+    if(state.screen !== 'game') return;
+    state.qIndex++;
+    if(state.qIndex >= state.questions.length){
+      finishStage(true);
+      return;
+    }
+    renderQuestion();
+  }
+
+  function finishStage(cleared){
+    if(state.screen !== 'game') return;
+    clearTimeout(state.timer);
+    hideFeedback();
+
+    const stage = STAGES[state.stageIndex];
+    const stars = cleared ? (state.mistakes === 0 ? 3 : (state.mistakes <= 2 ? 2 : 1)) : 0;
+
+    if(cleared){
+      save.stars[stage.id] = Math.max(Number(save.stars[stage.id]) || 0, stars);
+      save.best[stage.id] = Math.max(Number(save.best[stage.id]) || 0, state.score);
+      save.unlocked = Math.max(save.unlocked, Math.min(stage.id + 1, STAGES.length));
+      saveGame();
+    }
+
+    renderResult(cleared, stars, stage);
+    showScreen('result');
+
+    if(cleared){
+      sfx('win');
+      setTimeout(function(){ launchConfetti(); }, 220);
+    }else{
+      sfx('lose');
+    }
+  }
+
+  function renderResult(cleared, stars, stage){
+    const isFinal = cleared && stage.id === STAGES.length;
+
+    $('#result-emoji').textContent = cleared ? (isFinal ? '🏆' : '🎊') : '😿';
+    $('#result-title').textContent = cleared ? (isFinal ? '全部通关！' : '过关啦！') : '体力用尽啦…';
+    $('#result-sub').textContent = cleared
+      ? (isFinal ? '你成为了真正的单词冒险家！' : '太棒了！继续前往下一座岛吧～')
+      : '别灰心，休息一下再来挑战！';
+
+    $('#result-stars').innerHTML = [1, 2, 3].map(function(i){
+      return '<span class="star ' + (i <= stars ? '' : 'dim') + '" style="animation-delay:' +
+        ((i - 1) * 0.14) + 's">★</span>';
+    }).join('');
+
+    $('#result-score').textContent = state.score;
+    $('#result-correct').textContent = state.correctCount + ' / ' + state.questions.length;
+    $('#result-best').textContent = Number(save.best[stage.id]) || 0;
+
+    const actions = $('#result-actions');
+    const nextExists = cleared && stage.id < STAGES.length;
+    actions.innerHTML =
+      (nextExists ? '<button class="btn primary" data-action="next">下一关 ▶</button>' : '') +
+      (cleared
+        ? '<button class="btn ghost" data-action="replay">再玩一次</button>'
+        : '<button class="btn primary" data-action="replay">再挑战一次</button>') +
+      '<button class="btn ghost" data-action="map">回到地图</button>';
+
+    $$('#result-actions [data-action]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        sfx('click');
+        const act = btn.dataset.action;
+        if(act === 'next') startStage(stage.id + 1);
+        else if(act === 'replay') startStage(stage.id);
+        else showScreen('map');
+      });
+    });
+  }
+
+  /* ================= 反馈 ================= */
+  function showFeedback(ok, main, detail, ms){
+    const el = $('#feedback');
+    if(!el) return;
+    el.className = 'feedback show ' + (ok ? 'ok' : 'bad');
+    el.innerHTML =
+      '<div class="feedback-card">' +
+        '<div class="feedback-emoji">' + (ok ? '🎉' : '😿') + '</div>' +
+        '<div class="feedback-title">' + (ok ? '答对啦！' : '差一点～') + '</div>' +
+        (main ? '<div class="feedback-score">' + main + '</div>' : '') +
+        (detail ? '<div class="feedback-detail">' + detail + '</div>' : '') +
+      '</div>';
+
+    clearTimeout(state.feedbackTimer);
+    state.feedbackTimer = setTimeout(function(){
+      el.className = 'feedback';
+      el.innerHTML = '';
+    }, ms || 1500);
+  }
+
+  function hideFeedback(){
+    const el = $('#feedback');
+    if(el){
+      el.className = 'feedback';
+      el.innerHTML = '';
+    }
+  }
+
+  function onKeyDown(e){
+    if(state.screen !== 'game' || state.answered) return;
+    if(/^[1-4]$/.test(e.key) && state.keyOptions){
+      const b = state.keyOptions[Number(e.key) - 1];
+      if(b && !b.disabled){ e.preventDefault(); b.click(); }
+    }
+    if(e.key === 'Enter' && state.qType === 'spelling'){
+      const b = $('#check-btn');
+      if(b && !b.disabled){ e.preventDefault(); b.click(); }
+    }
+  }
+
+  /* ================= 声音 ================= */
+  function ensureAudio(){
+    if(!soundOn) return null;
+    if(!actx){
+      try{
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(AC) actx = new AC();
+      }catch(e){ actx = null; }
+    }
+    if(actx && actx.state === 'suspended'){
+      try{ actx.resume(); }catch(e){}
+    }
+    return actx;
+  }
+
+  function beep(freq, dur, delay, type, vol){
+    const ctx = ensureAudio();
+    if(!ctx) return;
+    try{
+      const t = ctx.currentTime + (delay || 0);
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type || 'sine';
+      o.frequency.value = freq;
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol || 0.06, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.15));
+      o.start(t);
+      o.stop(t + (dur || 0.15) + 0.03);
+    }catch(e){ /* 忽略 */ }
+  }
+
+  function sfx(name){
+    if(!soundOn) return;
+    if(name === 'click'){
+      beep(720, 0.07, 0, 'triangle', 0.035);
+    }else if(name === 'correct'){
+      [523.25, 659.25, 783.99].forEach(function(f, i){ beep(f, 0.18, i * 0.08, 'sine', 0.06); });
+    }else if(name === 'wrong'){
+      beep(220, 0.18, 0, 'sawtooth', 0.035);
+      beep(165, 0.28, 0.12, 'sawtooth', 0.035);
+    }else if(name === 'win'){
+      [523.25, 659.25, 783.99, 1046.5].forEach(function(f, i){ beep(f, 0.3, i * 0.13, 'triangle', 0.05); });
+    }else if(name === 'lose'){
+      [392, 349.23, 293.66, 246.94].forEach(function(f, i){ beep(f, 0.26, i * 0.14, 'sine', 0.05); });
+    }
+  }
+
+  function setupVoices(){
+    if(!('speechSynthesis' in window)) return;
+    const load = function(){
+      try{
+        const voices = window.speechSynthesis.getVoices() || [];
+        jaVoice = voices.find(function(v){ return v.lang && v.lang.toLowerCase().indexOf('ja') === 0; }) || null;
+      }catch(e){ jaVoice = null; }
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+  }
+
+  function speak(text){
+    if(!soundOn || !('speechSynthesis' in window)) return;
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.8;
+      u.pitch = 1.1;
+      if(jaVoice) u.voice = jaVoice;
+      window.speechSynthesis.speak(u);
+    }catch(e){ /* 忽略 */ }
+  }
+
+  function toggleSound(){
+    soundOn = !soundOn;
+    save.sound = soundOn;
+    saveGame();
+    updateSoundIcon();
+    if(!soundOn && 'speechSynthesis' in window){
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+    }else{
+      sfx('click');
+    }
+  }
+
+  function updateSoundIcon(){
+    const b = $('#sound-toggle');
+    if(!b) return;
+    b.textContent = soundOn ? '🔊' : '🔇';
+    b.setAttribute('aria-label', soundOn ? '关闭声音' : '打开声音');
+    b.classList.toggle('muted', !soundOn);
+  }
+
+  /* ================= 彩带 ================= */
+  function resizeConfetti(){
+    const c = $('#confetti');
+    if(!c) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = Math.floor(window.innerWidth * dpr);
+    c.height = Math.floor(window.innerHeight * dpr);
+    c.style.width = window.innerWidth + 'px';
+    c.style.height = window.innerHeight + 'px';
+  }
+
+  function stopConfetti(){
+    cancelAnimationFrame(confettiRAF);
+    confettiRAF = null;
+    const c = $('#confetti');
+    if(!c) return;
+    const ctx = c.getContext('2d');
+    if(ctx) ctx.clearRect(0, 0, c.width, c.height);
+  }
+
+  function launchConfetti(){
+    const c = $('#confetti');
+    if(!c) return;
+    resizeConfetti();
+    const ctx = c.getContext('2d');
+    if(!ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const colors = ['#FF6E9C', '#FFC93C', '#5BB8F2', '#4CC38A', '#8B7BF7', '#FF9F43'];
+    const parts = [];
+    for(let i = 0; i < 130; i++){
+      parts.push({
+        x: window.innerWidth / 2 + (Math.random() - 0.5) * 260,
+        y: window.innerHeight * 0.32 + (Math.random() - 0.5) * 60,
+        vx: (Math.random() - 0.5) * 11,
+        vy: -Math.random() * 11 - 3,
+        size: 6 + Math.random() * 9,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.32,
+        round: Math.random() < 0.45
+      });
+    }
+
+    const start = performance.now();
+    cancelAnimationFrame(confettiRAF);
+
+    function frame(now){
+      const elapsed = now - start;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      for(let i = 0; i < parts.length; i++){
+        const p = parts[i];
+        p.vy += 0.26;
+        p.vx *= 0.997;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = Math.max(0, 1 - elapsed / 3000);
+        ctx.fillStyle = p.color;
+        if(p.round){
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }else{
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        }
+        ctx.restore();
+      }
+      if(elapsed < 3000){
+        confettiRAF = requestAnimationFrame(frame);
+      }else{
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      }
+    }
+    confettiRAF = requestAnimationFrame(frame);
+  }
+
+})();
+</script>
+</body>
+</html>
